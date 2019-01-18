@@ -6,6 +6,12 @@ The main component of this lab will be OpenCV. We will be using OpenCV 3.4.4.
 Throughout this assignment, you may find it useful to refer to the offical
 OpenCV documentation: [opencv-docs](https://docs.opencv.org/3.4.4/)
 
+## General Information
+
+Deadline: **06:09 pm, Saturday, January 19th, 2019**
+
+For every 24 hours your submission is late, 5% will be deducted from your total score.
+
 ## Setting up the Environment
 Your environment will be contained in a docker container. You will need to create your container from the eec193_lab1 docker image which is already on the two GPU servers dedicated to this course: ```atlas.ece.ucdavis.edu``` and ```kronos.ece.ucdavis.edu```. However, you do not have to do your work remotely
 on the provided servers. We also provide a Dockerfile if you would like to do
@@ -29,7 +35,7 @@ Then download this Dockerfile, make sure you are in the same directory as the Do
 docker build -t eec193_lab1 .
 ```
 
-This may take anywhere from 5-60 mins depending on your internet speed. Once
+This may take anywhere from 5-60 minutes depending on your internet speed. Once
 completed, verify the image ```eec193_lab1``` exists by running the following
 command:
 
@@ -180,7 +186,7 @@ incrementally and to allow you to parallelize your work.
 
 Throughout this project, you will be working with the same 8 test images located
 at ```images/test_images/``` until you have built the full pipeline. Once you
-are satisified with how your lane line detection is behaving on the 8 test
+are satisfied with how your lane line detection is behaving on the 8 test
 images, you will run your pipeline on a test video.
 
 ### Phase 2.1 Perspective Transformation
@@ -615,7 +621,7 @@ linspace(0, binary_warped.rows, binary_warped.rows-1, ploty);
 polyval(ploty, fitx, best_fit);
 ```
 
-Be sure tofind the best-fit lines both in pixels and meters.
+Be sure to find the best-fit lines both in pixels and meters.
 
 You will probably want to visualize the best-fit lines on both your window
 search image and on your original input image. This will require drawing
