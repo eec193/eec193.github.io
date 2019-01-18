@@ -1714,11 +1714,21 @@ visible waypoints.</p>
 <p>Then write <code>video_main.cpp</code> to test your full pipeline on video. If I were
 you, I'd wrap the entire pipeline into one function to make it portable, but
 it's not required. The video is located at <code>videos/project_video.mp4</code>, and
-you may find an example output video at <code>videos/example_output.mp4</code>.</p>
+you may find an example output video at <code>videos/example_output.mp4</code>. Make sure to save your final output video in the <code>videos/</code> folder.</p>
 <p>For generating video, you may find this tutorial helpful: <a href="https://www.learnopencv.com/read-write-and-display-a-video-using-opencv-cpp-python/">learn-opencv</a></p>
 <p>If you find your lane line detection is failing on certain frames in the video,
 you can use <code>cv::putText</code> to put the frame number on your video, so that you
 can extract the failure frames to debug in <code>images_main.cpp</code>.</p>
+<h2>Submission</h2>
+<p>You will be submitting your entire project as a zip file on canvas. Only one person needs to submit. It is up to you whether or not to include the sandbox folder. Nothing in there will be graded.</p>
+<p>Other than all the code files with the completed TODOs/function definitions and your final output video, make sure to include an <code>AUTHORS</code> in the top project directory <code>eec193_lab1/</code> which contains the student ids of all the group members.</p>
+<p>For example:</p>
+<pre><code>$ cat AUTHORS
+000010001
+000010002
+000010003
+$
+</code></pre>
 </div>
 <!-- Adds some scroll space to the bottom of the doucment -->
 <div style="height: 1pc">&nbsp;</div>
