@@ -615,7 +615,7 @@ Here's an example:
 polyfit(line_inds_y, line_inds_x, best_fit, 2);
 
 // generate y-values for plotting best-fit line
-linspace(0, binary_warped.rows, binary_warped.rows-1, ploty);
+linspace(0, binary_warped.rows-1, binary_warped.rows, ploty);
 
 // generate x values of best-fit line
 polyval(ploty, fitx, best_fit);

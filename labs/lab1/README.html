@@ -1169,6 +1169,9 @@
 <p>The main component of this lab will be OpenCV. We will be using OpenCV 3.4.4.
 Throughout this assignment, you may find it useful to refer to the offical
 OpenCV documentation: <a href="https://docs.opencv.org/3.4.4/">opencv-docs</a></p>
+<h2>General Information</h2>
+<p>Deadline: <strong>06:09 pm, Saturday, January 19th, 2019</strong></p>
+<p>For every 24 hours your submission is late, 5% will be deducted from your total score.</p>
 <h2>Setting up the Environment</h2>
 <p>Your environment will be contained in a docker container. You will need to create your container from the eec193_lab1 docker image which is already on the two GPU servers dedicated to this course: <code>atlas.ece.ucdavis.edu</code> and <code>kronos.ece.ucdavis.edu</code>. However, you do not have to do your work remotely
 on the provided servers. We also provide a Dockerfile if you would like to do
@@ -1185,7 +1188,7 @@ docker community edition for your operating system: <a href="https://docs.docker
 <p>Then download this Dockerfile, make sure you are in the same directory as the Dockerfile, and run the following command:</p>
 <pre><code>docker build -t eec193_lab1 .
 </code></pre>
-<p>This may take anywhere from 5-60 mins depending on your internet speed. Once
+<p>This may take anywhere from 5-60 minutes depending on your internet speed. Once
 completed, verify the image <code>eec193_lab1</code> exists by running the following
 command:</p>
 <pre><code>docker images
@@ -1298,7 +1301,7 @@ own module file and tester file. This is to both ensure you build your program
 incrementally and to allow you to parallelize your work.</p>
 <p>Throughout this project, you will be working with the same 8 test images located
 at <code>images/test_images/</code> until you have built the full pipeline. Once you
-are satisified with how your lane line detection is behaving on the 8 test
+are satisfied with how your lane line detection is behaving on the 8 test
 images, you will run your pipeline on a test video.</p>
 <h3>Phase 2.1 Perspective Transformation</h3>
 <p>To more easily isolate the lane line pixels, it helps to get a birds-eye
@@ -1626,12 +1629,12 @@ to help you with this. Use a second order-polynomial to fit the lane lines.</p>
 polyfit(line_inds_y, line_inds_x, best_fit, 2);
 
 // generate y-values for plotting best-fit line
-linspace(0, binary_warped.rows, binary_warped.rows-1, ploty);
+linspace(0, binary_warped.rows-1, binary_warped.rows, ploty);
 
 // generate x values of best-fit line
 polyval(ploty, fitx, best_fit);
 </code></pre>
-<p>Be sure tofind the best-fit lines both in pixels and meters.</p>
+<p>Be sure to find the best-fit lines both in pixels and meters.</p>
 <p>You will probably want to visualize the best-fit lines on both your window
 search image and on your original input image. This will require drawing
 best-fit lines on two images as shown below:</p>
