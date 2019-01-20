@@ -35,7 +35,7 @@ learning models rather than understanding computational graphs. We will use Pyto
 
 <p>As you may notice, there are extra steps to connect to the server unlike Lab 1. What the previous setups do is bind your local machine port (your laptop), with the servers' port (<code>kronos</code> or <code>atlas</code>). This way, visualization data for <code>jupyter notebook</code> can be passed from the server to your local machine, and you can use your local machine browser to interactively program on the server. If <code>vim</code> is not your forte, <code>jupyter notebook</code> can help you program with ease. In industry, where you are likely to share your GPU resources with other colleagues on a remote server, it is important that you know how to perform this setup phase. This setup is called "port binding", and it can be explained with the following diagram:</p>
 
-<p><img src="portbind.PNG" alt="alt text" /></p>
+<p><img src="./portbind.PNG" alt="alt text" /></p>
 
 <p>The previous port binding phase creates a pipeline between your laptop and the server, granting you direct access to the GPUs, since they are physically connected to the server. However, because we are going to develop our code inside a docker container, which for all purposes might as well be its own machine, there needs to be a connection between the host server (<code>kronos</code> or <code>atlas</code>) with your lab 2 container. We can make this pipeline when creating the container:</p>
 
@@ -265,7 +265,7 @@ return output
 <li><p>Layer 5: Fully connected, input channel = <code>&lt;you find out&gt;</code>, output channel = 10</p></li>
 </ul>
 
-<p><strong>Question</strong>: Why do we have to a fully connected layer at the end of the model? Can't we do the same thing with 1 fully connected layer? Why or why not?</p>
+<p><strong>Question</strong>: Why do we have 2 a fully connected layer at the end of the model? Can't we do the same thing with 1 fully connected layer? Why or why not?</p>
 
 <p><strong>Question</strong>: What does the pooling layer do?</p>
 
