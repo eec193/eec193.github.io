@@ -1,0 +1,317 @@
+<h1 id="eec193alab2part1deeplearningworkflowwithvehicledetections">EEC 193A Lab 2 Part 1: Deep Learning Workflow with Vehicle Detections</h1>
+
+<h2 id="noteofcontext">Note of Context</h2>
+
+<p>In this project, you will work individually to develop a fully functional
+vehicle detection neural network using the Pytorch framework. Although the industry
+standard for deep learning frameworks is arguably Tensorflow, Pytorch provides a
+user-friendly interface that allows programmers to focus on developing machine
+learning models rather than understanding computational graphs. We will use Pytorch exclusively here-on-out. API calls and documentation regarding this framework can all be found at https://pytorch.org/docs/0.4.0/. Unlike Lab 1, where most API calls were given in the instructions, you will have to use the Pytorch documentation to search up different neural network layers, how to interact with them, how to preprocess images, how to call different neural network optimizers and so on. The reason behind this: we want you to gain more experience as a machine learning developer, who can utilize machine learning frameworks with ease, creating new neural network models in a short period of time.</p>
+
+<p>With respect to Self-driving cars, Lab 1 introduces a "Traditional Computer Vision" approach to detect lane lines. Lane lines are relatively simple and mathematically well-defined (with thresholding and peak-finding). On the other hand, vehicles are much more complex images and cannot be rigorously defined with operations that you encounter in lab 1 (windowing, pixel-saturating, peak-summing, etc...). Therefore, a "Deep Computer Vision" approach is needed.</p>
+
+<p>This lab is developed by Sam Truong. Contact him through Slack if you need clarifications. There will be some questions along with the lab, you can write them in a separate pdf and submit it with your Jupyter notebooks. These questions will help you prepare for the interactive grading session. Feel free to ask the TAs if you do not understand the questions.</p>
+
+<h2 id="settinguptheenvironment">Setting up the Environment</h2>
+
+<p>Like Lab 1, your environment will be provided to you via docker. You will need to create your container from the eec193_lab2 docker image which is already on the two GPU servers dedicated to this course: <code>atlas.ece.ucdavis.edu</code> and <code>kronos.ece.ucdavis.edu</code>. It is highly recommended that you use the servers for this lab, because training the neural models can be sped up immensely using the GPUs. You can train it on your own laptop with CPU, or if you have a Nvidia GPU at home. A Dockerfile is provided if you would like to take this option. You may also make your own image with all the dependencies necessary for the lab, however it is recommended to stick with the TA provided resources.</p>
+
+<p>This lab is developed in Python using <code>jupyter notebook</code>, a great IDE that allows you to interactively run Python scripts on your browser. No X11-forwarding or extra steps are needed to run <code>jupyter notebook</code> on <code>kronos</code> and <code>atlas</code>.</p>
+
+<p>SSH into the machines using the following commands:</p>
+
+<p>If you are on MacOS or Linux</p>
+
+<pre><code># for atlas.ece.ucdavis.edu
+ ssh  -L &lt;port num&gt;:localhost:&lt;port num&gt; kerberos_id@kronos.ece.ucdavis.edu
+
+# for kronos.ece.ucdavis.edu
+ ssh  -L &lt;port num&gt;:localhost:&lt;port num&gt; kerberos_id@kronos.ece.ucdavis.edu
+</code></pre>
+
+<p>If you are on Windows:</p>
+
+<p>Use <code>PuTTY</code> to connect to the machines like lab 1. Then, under <code>SSH/Tunnels</code>, specify the source port as <code>&lt;port num&gt;</code> and destination port as <code>localhost:&lt;port num&gt;</code>. Then, click <code>Add</code> and <code>Open</code></p>
+
+<p>As you may notice, there are extra steps to connect to the server unlike Lab 1. What the previous setups do is bind your local machine port (your laptop), with the servers' port (<code>kronos</code> or <code>atlas</code>). This way, visualization data for <code>jupyter notebook</code> can be passed from the server to your local machine, and you can use your local machine browser to interactively program on the server. If <code>vim</code> is not your forte, <code>jupyter notebook</code> can help you program with ease. In industry, where you are likely to share your GPU resources with other colleagues on a remote server, it is important that you know how to perform this setup phase. This setup is called "port binding", and it can be explained with the following diagram:</p>
+
+<p><img src="./portbind.PNG" alt="alt text" /></p>
+
+<p>The previous port binding phase creates a pipeline between your laptop and the server, granting you direct access to the GPUs, since they are physically connected to the server. However, because we are going to develop our code inside a docker container, which for all purposes might as well be its own machine, there needs to be a connection between the host server (<code>kronos</code> or <code>atlas</code>) with your lab 2 container. We can make this pipeline when creating the container:</p>
+
+<pre><code>nvidia-docker create -it --name &lt;last_name&gt;_lab2 -p &lt;port num&gt;:&lt;port num&gt; eec193_lab2 /bin/bash
+</code></pre>
+
+<p>The <code>-p</code> flag bind the a port on the server with a port on our container. By now, you have established a link between your laptop and the container. To launch the container, do <code>nvidia-docker start &lt;your container&gt;</code> and <code>nvidia-docker attach &lt;your container&gt;</code>. The reason why you should use <code>nvidia-docker</code> instead of just <code>docker</code> is because <code>nvidia-docker</code> allow you to access the GPU on the host while being inside the container.</p>
+
+<p>For <code>&lt;port num&gt;</code>, theoretically you can choose any number above <code>8000</code>, as long as it is unused. We suggest you keep all your <code>&lt;port num&gt;</code> the same for all sources and destinations, as it is easier to keep track of. Because a port has to be unique, if your classmates are already using a port, you cannot use it anymore. To alleviate this issue we have create port assignments for everyone in the class.</p>
+
+<ul>
+<li>Faraz Cherukattil 9000</li>
+
+<li>Calvin Cramer  9001</li>
+
+<li>Kolin Guo  9002</li>
+
+<li>Griffin Kimura  9003</li>
+
+<li>Toshinori Kitamura  9004</li>
+
+<li>Frank Lee  9005</li>
+
+<li>Daniel Loran  9006</li>
+
+<li>Victoria Salova  9007</li>
+
+<li>Wenda Xu 9008</li>
+</ul>
+
+<p><strong>Question</strong>: Why are there always 2 <code>&lt;port num&gt;</code> for each port binding command?</p>
+
+<p><strong>Question</strong>: Why do we use port <code>8000</code> and above?</p>
+
+<h2 id="codingwithjupyternotebooks">Coding with Jupyter notebooks</h2>
+
+<p>Once you are inside your container, go to the folder that you put lab 2 source code in and run</p>
+
+<pre><code>jupyter notebook --no-browser --ip=0.0.0.0 --allow-root --port=&lt;port num&gt;
+</code></pre>
+
+<p>After this, you can go to your browser on your laptop and go to <code>localhost:&lt;port num&gt;</code>. There you should see the directory that contains your Lab 2 source code on your remote container. You can start interactive sessions in Python from there. If you are asked for a <code>token</code> check the output on your terminal when you ran <code>jupyter notebook</code> on the remote server.</p>
+
+<p><strong>Question</strong>: Why do we specify <code>--no-browser</code> when clearly we want to run the interactive python session on your laptop?</p>
+
+<p><strong>Question</strong>: What is <code>--ip=0.0.0.0</code> flag means?</p>
+
+<h2 id="trainingthemodelontheserver">Training the model on the server</h2>
+
+<p>You can safely skip this section if you are not using the remote server. Because there will be 5 of you on each machine, this is how we are going to share the GPU: anytime you want to debug your code, do not turn on any GPU options in Pytorch (will be specified in following section). You can run your script inside your container all you want if you are not using the GPU. If you think your code is ready to be trained on GPU, turn on GPU options, then exit the container. Once you are on the host server, you can run your GPU-enabled code with</p>
+
+<pre><code>ts nvidia-docker exec -it &lt;your container&gt; python3 &lt;the file you want to run&gt;
+</code></pre>
+
+<p>Because a training session can take from minutes to several hours, the <code>ts</code> task scheduler command allows you to queue up your execution, in case somebody else is using the GPU. Knowing these features will allow you to efficiently share resources, not for just this lab, but also later on. Some good ts commands:</p>
+
+<pre><code>#removes a job from the queue
+ts -r &lt;job id&gt;
+#kill an active job
+ts -k
+#prioritize a job
+ts -u &lt;job id&gt;
+</code></pre>
+
+<p>Just type in <code>ts</code> to display all tasks in the queue. The reason why you have to run this command outside of your container is because your container does not know anything outside of itself. It is unaware of other processes, and thus you have to manage these task scheduling steps on the host machine.</p>
+
+<p>At this point, you should know how to setup your environment and work collaboratively with others on a machine learning project. People who want to do machine learning projects often experience huge setbacks just because they do not know how to use their compute resources and can't train their networks effectively. From here on, you should know how to establish a workflow on any server with port binding, docker and task scheduling, not just <code>kronos</code> and <code>atlas</code>, but also public services like <code>Amazon AWS</code> or <code>Google Cloud</code>. If you still feel confused about setting up a work environment please ask the TAs for help.</p>
+
+<hr />
+
+<h2 id="labcomponents">Lab components</h2>
+
+<p>This is the high level overview of the tasks you will complete for this lab:</p>
+
+<p>Phase 1: MNIST Dataset [70 points]</p>
+
+<ul>
+<li>Build Dataset class in Pytorch. [10 points]</li>
+
+<li>Build a 2-layer-deep model. [10 points]</li>
+
+<li>Train 2-layer-deep model and train it with SGD optimizer. [5 points]</li>
+
+<li>Build a 5-layer-deep model. [10 points]</li>
+
+<li>Train 5-layer-deep model and train it with the Adam optimizer. [5 points]</li>
+
+<li>Build your own model that has a higher accuracy than the 2-layer-deep models. [20 points]</li>
+
+<li>Train your personalized model. [10 points]</li>
+</ul>
+
+<p>Phase 2: UIUC Vehicle Dataset [30 points]</p>
+
+<ul>
+<li>Build car dataset object in Pytorch. [10 points]</li>
+
+<li>Build training session for Resnet-18. [10 points]</li>
+
+<li>Train Resnet-18. [10 points]</li>
+</ul>
+
+<p>Phase 3: Interactive Grading [20 points] + Report [10 points]</p>
+
+<ul>
+<li>Make sure that you understand all the material presented in instruction, including the section on environment setup.</li>
+
+<li>Your answers to questions as well as training accuracy for each model should be presented in a report. The more visualization the better. You should write your reports with the objective of informing the reader of everything you've done in the development of an image classifier. The goal here is to get you into the habit of writing good software documentation.</li>
+</ul>
+
+<p>The max score for this lab is 130 points.</p>
+
+<h2 id="phase1">Phase 1</h2>
+
+<p>The reason we use the MNIST hand written digit dataset for this phase is because the complexity of the data is very low, so training can be very fast, allowing you to experiment with more models. The purpose of this phase is to get you acquainted with the Training in a Deep Learning workflow.</p>
+
+<h3 id="installingdependencies">Installing Dependencies</h3>
+
+<p>In this part you will be installing Pytorch in your container through Anaconda. Anaconda is a Python distribution that manages dependencies on your system. We want you to get exposed to how dependency installations work, and Anaconda is a very beginner friendly introduction to do so. To learn more https://www.anaconda.com/distribution/. To install Pytorch, do</p>
+
+<pre><code># install pytorch core
+conda install -c soumith pytorch
+
+# install torch vision, this is needed if you want to do computer vision tasks
+conda install -c pytorch torchvision
+</code></pre>
+
+<p><strong>Question</strong>: How do you quickly verify that the dependencies are met?</p>
+
+<p><strong>Question</strong>: What is the <code>-c</code> flag in <code>conda</code>?</p>
+
+<h3 id="buildthedatasetclass">Build the Dataset class</h3>
+
+<p>The Pytorch Dataset class is an important attribute needed prior to training. This class allows you to treat the entire dataset as an object, on which you can perform operations such as image processing or dataset partitioning. The <code>dataset.ipynb</code> file contain a class called <code>MNISTDataSet</code> which is a child class of the <code>torch.utils.data.dataset</code> module. Your job is to overwrite the parent class to tailor the dataset class to the MNIST dataset. There are 3 internal functions that you need to overwrite: <code>__init__</code>, <code>__getitem__</code>. <code>__len__</code>.</p>
+
+<ul>
+<li><p><code>__init__</code> function initializes or constructs your class, here you should pass in a string that tells the class where it can import the MNIST data. you should use the <code>self</code> python class object to save the string to the class instance (i.e <code>self.datapath = ...</code>). Your class should also accept a transform handler. If the handler is not <code>None</code>, it will process the data whenever <code>__getitem__</code> is called. The data is located at <code>.data/processed/training.pt</code>. The <code>.pt</code> file is a Pytorch extension that allows you to save multiple arrays of different sizes. The <code>training.pt</code>, when imported, returns a tuple of <code>(images, labels)</code>. The <code>__init__</code> functions should extract the images and labels out of this file given the path.</p></li>
+
+<li><p><code>__getitem__</code> returns a pair of <code>(image, label)</code> based on the supplied <code>index</code>. It also should perform the transformation specified in <code>__init__</code> before returning the image/label pair.</p></li>
+
+<li><p><code>__len__</code> simply return the length of the dataset.</p></li>
+</ul>
+
+<p>These 3 internal functions are used by the <code>torch.utils.data.DataLoader</code> module. It uses <code>__getitem__</code> to return a batch of images and labels. <code>__len__</code> is used primarily for dataset-long operations like dataset shuffling (randomize order of data). It is also used to iteratively get data points from the training set to train the model (as a for loop).</p>
+
+<h3 id="builda2layermodel">Build a 2-layer Model</h3>
+
+<p>Like the Dataset class, you will overwrite the Pytorch <code>nn.Module</code> class. You will find the template of this class in <code>model.ipynb</code> This parent class contain basic operations for neural network model, it knows how to handle both forward and backward propagation. It knows how to handle different batch sizes and utilize the GPU. There are 2 functions you need to overwrite: <code>__init__</code> and <code>forward</code>.</p>
+
+<ul>
+<li><p>The <code>__init__</code> function is where you will declare your layers, based on the architecture.</p></li>
+
+<li><p>The <code>forward</code> function is where you will connect the layers together. Pytorch makes it really easy to do this:</p></li>
+</ul>
+
+<pre><code>forward(input):
+  x1 = layer1(input)
+  x2 = layer2(x1)
+  output = layer3(x2)
+return output
+</code></pre>
+
+<p>For the 2-layer architecture, you need to implement:</p>
+
+<ul>
+<li><p>Layer 1: Convolutional, input channel = 1, output channel = 20, kernel size = 3, step size = 1</p></li>
+
+<li><p>Layer 2: Fully connected, <strike>input dimension = 20</strike>  <font color="#FF0000">input dimension = <code>&lt;you find out&gt;</code></font>, output dimension = 10</p></li>
+</ul>
+
+<p><strong>Question</strong>: Can we change the output channel of Layer 1? Why or why not?</p>
+
+<p><strong>Question</strong>: Can we change the output channel of Layer 2 to be something other than 10 without changing anything else? Why or why not?</p>
+
+<p><strong>Question</strong>: What is the common variable between Layer 1 and 2 (what has to be the same)? Why?</p>
+
+<p><strong>Question</strong>: Do you need Softmax at the output of Layer 2? Why or why not?</p>
+
+<p><strong>Question</strong> Mathematically, what is a fully connected layer?</p>
+
+<p><strong>Question</strong>: You will likely need to use a vectorize function to turn the output tensor of Layer 1 into a vector, before inputting into Layer 2. Which function do you use? Why do you need to vectorize the tensor?</p>
+
+<p><strong>Question</strong> Why do you need to instantiate the layers in <code>__init__</code> then use them in <code>forward</code>? Can we instantiate the layers directly in <code>forward</code>? What would be the consequence of that? <strong>Hint</strong>: Ask your self where the weights of each layers are saved through out the training phase?</p>
+
+<h3 id="train2layermodel">Train 2-layer Model</h3>
+
+<p>Now that we have defined the Dataset and model, we can train the neural network. The <code>train.ipynb</code> should give you a basic template to train. Notice that because we cannot import functions from other Jupyter notebooks, you need to create a <code>dataset.py</code> file and <code>model.py</code> file and copy-paste your solution to the previous notebook there. Essentially, the notebooks allow you to interactively run your code, to actually turn your code into callable files, you still need to make the <code>.py</code>. We will use the <code>CrosEntropyLoss()</code> to calculate the error for back propagation. Use Stochastic Gradient Descent as your optimizer. Use <code>learning rate = 0.01</code> and <code>batchsize = 8</code></p>
+
+<p><strong>Question</strong>: You will likely need to use <code>torch.autograd.Variable</code>, where do you use it and what does it do?</p>
+
+<p><strong>Question</strong>: How many images are we training per iteration?</p>
+
+<p><strong>Question</strong>: How do you save the weights after training?</p>
+
+<p><strong>Question</strong>: What learning rate do you use to train the model? What happens if you decrease the learning rate? What happens if you increase the learning rate?
+<strong>Hint</strong>: Look at how the cost function for a 1 parameter model is affected by varying step size and try to generalize your thoughts to models with larger amounts of parameters.</p>
+
+<p><strong>Question</strong>: How do you plot the learning curve? Try setting the learning rate to be very high then rerun the training process for a few <code>window</code>, what does the learning curve look like?</p>
+
+<p><strong>Question</strong>: Try setting the learning rate to be very low, then rerun the training process for a few <code>window</code>, what does the learning curve look like?</p>
+
+<p><strong>Question</strong>: What are the advantages/disadvantages of setting learning curves high/low?</p>
+
+<p><strong>Question</strong>: How do you know when to stop the training process?</p>
+
+<p>In practice, you should save your weight once in a while as checkpoint, just in case your system crashes. Save your weights every <code>window</code>.</p>
+
+<p><strong>Question</strong>: Besides acting as a backup, saving weights can help you "go back in time". When is this necessary? <strong>Hint</strong> It has to do with resetting the hyperparameters (e.i decreasing learning rate, etc.)</p>
+
+<h3 id="test2layermodel">Test 2-Layer Model</h3>
+
+<p>The template does not provide the source code for testing the accuracy. However, the testing phase is almost identical to the training phase (just without the back propagation and loss calculation). Your job is to write a function that calculates the percentage accuracy of the current model. Use the <code>./data/processed/test.pt</code> file to instantiate your test Dataset.</p>
+
+<h3 id="build5layermodel">Build 5-Layer Model</h3>
+
+<p>Similar to the 2-Layer model, make a new class in <code>model.ipynb</code>. The architecture for this model is:</p>
+
+<ul>
+<li><p>Layer 1: Convolutional, input channel = 1, output channel = 32, kernel size = 5, stride = 1, padding = 2</p></li>
+
+<li><p>Layer 2: Pooling, kernel size = 2, stride = 2</p></li>
+
+<li><p>Layer 3: Convolutional, input channel = <code>&lt;you find out&gt;</code> , output channel = 64, kernel size = 5, stride = 1 padding = 2</p></li>
+
+<li><p>Layer 4: Fully connected, input channel = <code>&lt;you find out&gt;</code>, output channel = 1024</p></li>
+
+<li><p>Layer 5: Fully connected, input channel = <code>&lt;you find out&gt;</code>, output channel = 10</p></li>
+</ul>
+
+<p><strong>Question</strong>: Why do we have 2 a fully connected layer at the end of the model? Can't we do the same thing with 1 fully connected layer? Why or why not?</p>
+
+<p><strong>Question</strong>: What does the pooling layer do?</p>
+
+<p><strong>Question</strong>: You may need to use a ReLu activation function after every convolutional layer and before every pooling layer. What is the intuition behind this?</p>
+
+<h3 id="train5layermodel">Train 5-Layer Model</h3>
+
+<p>Similar to the 2-Layer model, train the model with Adam optimizer instead of Stochastic Gradient Descent. Make <code>batch size = 16</code> (doubled) and <code>learning rate = 0.01</code> (a tenth).</p>
+
+<p><strong>Question</strong> How long does it take to train one iteration? Is it taking a longer or shorter amount of time? If so, why?</p>
+
+<p><strong>Question</strong> What does the learning curve look like?</p>
+
+<p><strong>Question</strong> 2 hyperparameters that we changed compared to 2-Layer are learning rate and batch size. How do these parameters affect training time and final accuracy?</p>
+
+<h3 id="test5layermodel">Test 5-Layer Model</h3>
+
+<p>Compare your final accuracy with that of the 2-Layer model.</p>
+
+<p><strong>Question</strong> Which one is better? Why?</p>
+
+<p><strong>Question</strong> Setting the learning curves for both model side by side, which one converges to a minimum faster? Which has a lower final loss?</p>
+
+<p><strong>Question</strong> Is it possible for one model to have a lower minimum loss during training and lower test accuracy? Why or why not?</p>
+
+<h3 id="buildandtrainamodifiedmodel">Build and Train a modified model</h3>
+
+<p>The purpose of this part is to see if your intuition behind how to improve neural networks is valid. By contrasting a 2-Layer and 5-Layer model, you should be able to see what makes a neural network robust. You can modify the 5-Layer model, or build a new model specified in a research paper like Alexnet or Resnet. Write a small report that includes the following:</p>
+
+<ul>
+<li>Learning curve</li>
+
+<li>Model architecture</li>
+
+<li>Learning rate used</li>
+
+<li>Batch size used</li>
+
+<li>Optimizer used</li>
+
+<li>Number of epoch</li>
+
+<li>Justify your architecture design</li>
+</ul>
+
+<p>It is recommended to modify the model architectures given to you. The emphasis of this lab is to develop the intuition necessary to see how changing different hyperparameters affects model accuracy. The students who iterate faster through different models will have more data, giving them more to talk about in their reports. The objective is not to get the best model accuracy, but to have the best intuition as to how to tune hyperparameters to increase model accuracy. As some first actions you should take, you can add or remove a convolution/fc layer and see how model performance changes. Then once you've played with each layer you can play with different batch sizes, optimizers, and learning rates. The key here is iterating quickly through your changes to build the intuition necessary to architect neural networks.</p>
+
+<h2 id="Phase2">Phase 2</h2>
+<p>See lab 2 phase 2 zip for more info. It is very straight forward and need not much instructions. Teja developed this phase. Contact him on Slack if you need any help. Good luck!</p>
