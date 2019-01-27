@@ -1,0 +1,70 @@
+<h1 id="eec193alab3lab3vehicledetections">EEC 193A Lab3 Lab 3: Vehicle Detections</h1>
+<p>This lab is developed by Teja. Asked him on Slack if you have questions.
+<h1 id="phase1">Phase 1</h1>
+
+<p>In phase 1, you will be using the LISA dataset in order to make a vehicle
+localizer using Pytorch. Specifically, you will take the Resnet-18 pretrained
+model, and modify it so that the final output layer is a bounding box regressor.</p>
+
+<h2 id="phase1questions">Phase 1 Questions</h2>
+
+<p><em>Q1. How does your choice of loss affect the accuracy of your bounding box
+regressor. Specifically, what is the accuracy difference between L1 or L2 loss?
+Which works better and why? (To properly answer this question you will need to
+understand what is happening both conceptually as well have done some
+experimentation on your model).</em></p>
+
+<p><em>Q2. What is the purpose of IoU? Why is it so important in object detection?</em></p>
+
+<p><em>Q3. The current model in this phase can only do single object detection. How
+would you transform this model to handle multiple object detection? (There are
+multiple valid answers to this. You should compare the merits of each method.)</em></p>
+
+<h1 id="phase2">Phase 2</h1>
+
+<p>In phase 2, you will be comparing how YOLO-based unified regression models do
+against Region Proposal Based networks on the COCO dataset. Specifically, you
+will need to train models using both YOLOv3 and Mask-RCNN.</p>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>The goal of this phase is to familiarize how to benchmark the performance of
+state of the art deep learning algorithms on common datasets. In industry it is
+very common to productionize the best open source models rather than spending
+time developing a custom architecture as the development times are very
+expensive and its possible to make a very accurate model
+if you have enough data.</p>
+
+<h2 id="report">Report</h2>
+
+<p>Your report should include detailed instructions on how to run and train both
+models. This includes the proper directory structure, command line inputs,
+python scripts, docker setup, etc. This is to help you get into the habit of
+creating good documentation to replicate your results. Additionally, you should
+spend a significant amount of time discussing the relative merits of both
+types of models. It will be helpful to look at the papers for both models to
+justify the observations you have made when training both YOLO and Mask-RCNN.  </p>
+
+<h2 id="links">Links</h2>
+
+<p>Mask-RCNN Implementations:
+Pytorch: [https://github.com/multimodallearning/pytorch-mask-rcnn]
+Tensorflow: [https://github.com/matterport/Mask_RCNN]
+Caffe2 (Original Open-Source Release):
+[https://github.com/facebookresearch/Detectron]</p>
+
+<p>YOLOv3 Code:
+Pytorch: [https://github.com/ultralytics/yolov3]
+Original Implementation: [https://pjreddie.com/darknet/yolo/]</p>
+
+<p>COCO Dataset:
+[http://cocodataset.org/#home]</p>
+
+<h1 id="phase3">Phase 3</h1>
+
+<p>After completing phase 2, you need to combine both your object detection model
+(either YOLO or RCNN) and your lane line detection model on the Udacity highway
+video. Please include the final video with both the detected vehicles and the
+detected lane lines. Please keep in mind that your final video should only
+include vehicles on the road. If the video includes detections of other
+objects it will be considered incorrect.</p>
