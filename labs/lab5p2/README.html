@@ -1,0 +1,184 @@
+﻿<h1 id="lab-5-phase-2">Lab 5 Phase 2</h1>
+<p>In the second phase of Lab 5, we will be using Robot<br>
+Operating System (ROS) in order to do both SLAM and path<br>
+planning on the car. After we setup the car’s control system,<br>
+we can then combine everything we have made thus far<br>
+using ROS and run it on the car.</p>
+<h2 id="installing-ros-on-the-jetson">Installing ROS on the Jetson</h2>
+<p>The first step to use ROS is to install it on the Jetson. You will likely<br>
+need to do some additional steps before that however. Open up<br>
+a terminal and run the following command:</p>
+<pre><code>uname -r
+</code></pre>
+<p>If the output is:</p>
+<pre><code>4.4.38
+</code></pre>
+<p>Then you will need to rebuild the Jetson TX2 kernel before installing ROS. If<br>
+you have a different number than the kernel version installed on your Jetson<br>
+does not need to be rebuilt. You may skip the next step if this is the case.</p>
+<h3 id="rebuilding-the-jetson-tx2-kernel">Rebuilding the Jetson TX2 Kernel</h3>
+<p>We need to rebuild the Jetson TX2 kernel in order to give support to the<br>
+sensors we are using in this lab. This includes both our IMU and the<br>
+RPLIDAR. Because our IMU connects to USB through FTDI we need to<br>
+include support for that at the kernel level. In order to do this change to<br>
+the Jetson’s home directory and clone the following repo.</p>
+<pre><code>cd
+git clone https://github.com/jetsonhacks/buildJetsonTX2Kernel.git
+</code></pre>
+<p>Change into the directory and run the scripts <code>getKernelSourcesNoGUI.sh</code>,<br>
+<code>makeKernel.sh</code>, and <code>copyImage.sh</code> in that order.</p>
+<pre><code>cd buildJetsonTX2Kernel
+./getKernelSourcesNoGUI.sh
+./makeKernel.sh
+./copyImage.sh
+</code></pre>
+<p>After running all the scripts the kernel will be rebuilt. At this point, you can reboot<br>
+the Jetson and start on installing ROS.</p>
+<h3 id="installing-ros-kinetic">Installing ROS Kinetic</h3>
+<p>For the Jetson, we need to install the ROS distribution kinetic. Kinetic is the<br>
+distribution of ROS made for Ubuntu 16.04. It also has the largest available<br>
+open source package suite of all ROS distributions outside of ROS Indigo.<br>
+Typically, we would try and use docker to install software dependencies like ROS.<br>
+Unfortunately, that would make things fairly inconvenient for us, as we’d like<br>
+easy access to USB devices and network interfaces, and using a Docker container<br>
+adds an extra layer of complexity to this whole process. The Jetson also has a<br>
+different processor architecture that affects docker’s ability to run things. So<br>
+we don’t have easy access to a ROS container. Instead, we do a native<br>
+installation of ROS without docker. First, we will need to add all Ubuntu<br>
+repositories so the Jetson knows where to download ROS from. Run the<br>
+following command to add the <code>universe</code>, <code>restricted</code>, and <code>multiverse</code><br>
+repositories:</p>
+<pre><code>sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse" 
+sudo apt-get update
+</code></pre>
+<p>After setting up the repositories we can finally install ROS kinetic onto the<br>
+Jetson. Run the following to install ROS.</p>
+<pre><code>sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" &gt; /etc/apt/sources.list.d/ros-latest.list'
+sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+sudo apt-get update
+sudo apt-get install ros-kinetic-desktop
+sudo rosdep init
+rosdep update
+echo "source /opt/ros/kinetic/setup.bash" &gt;&gt; ~/.bashrc
+source ~/.bashrc
+sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential
+</code></pre>
+<h3 id="ros-tutorials">ROS Tutorials</h3>
+<p>For the first part of the lab, you will need to go through the official ROS<br>
+tutorials. You can find them <a href="http://wiki.ros.org/ROS/Tutorials">here.</a> You only need to go through the<br>
+beginner ROS tutorials but they are fairly comprehensive in covering all of<br>
+the basic ROS concepts.</p>
+<h2 id="installing-ros-sensor-packages">Installing ROS sensor packages</h2>
+<p>After installing ROS on the Jetson and going through the ROS tutorials,<br>
+you should be ready to get the RPLIDAR and IMU ready and sending<br>
+data through ROS. We will first setup the RPLIDAR.</p>
+<h3 id="setting-up-a-catkin-workspace">Setting up a Catkin Workspace</h3>
+<p>Before we can work with the sensors we need to setup a catkin<br>
+workspace. Navigate to your home directory and create a workspace.</p>
+<pre><code>cd
+mkdir -p catkin_ws/src
+cd catkin_ws/src
+</code></pre>
+<p>We will later use the native ROS build tools within this workspace to make<br>
+a ROS package that can run all the modules for our car.</p>
+<h3 id="installing-the-rplidar-ros-node">Installing the RPLIDAR ROS Node</h3>
+<p>In the <code>src</code> directory of our catkin workspace we will hold all of the<br>
+ROS packages we use on the car. In this case, we will first install the<br>
+RPLIDAR ROS Node. Clone the repo and then run catkin_make to build<br>
+the RPLIDAR node.</p>
+<pre><code>cd ~/catkin_ws/src
+git clone https://github.com/Slamtec/rplidar_ros.git
+cd ~/catkin_ws
+catkin_make
+</code></pre>
+<p>This will build the RPLIDAR node. You can then run the following command<br>
+to bring up RVIZ and visualize the results of the RPLIDAR.</p>
+<pre><code>roslaunch rplidar_ros view_rplidar.launch
+</code></pre>
+<p>You can also run the following to see the RPLIDAR used in a test application.</p>
+<pre><code>roslaunch rplidar_ros rplidar.launch
+rosrun rplidar_ros rplidarNodeClient
+</code></pre>
+<h4 id="usb-devices">USB Devices</h4>
+<p>An important thing to keep track of here is the USB devices connected to the<br>
+Jetson. There are 7 port USB hubs you can use to extend the amount of<br>
+peripherals you can attach to the Jetson. Typically the way USB devices work<br>
+in Linux is by opening a logical file path where all the data from a USB device<br>
+is serially streamed to. There are two typical file paths that are used in Linux,<br>
+<code>/dev/ttyUSB*</code>and <code>/dev/ttyACM*</code> where the * star represents a number.<br>
+In my case, if I inspect these paths using <code>ls</code> I get the following:</p>
+<pre><code>ls /dev/ttyUSB*
+/dev/ttyUSB0
+ls /dev/ttyACM*
+/dev/ttyACM0
+</code></pre>
+<p>On my Jetson, <code>/dev/ttyUSB0</code> is the file corresponding to the LIDAR. The<br>
+filepath for the IMU is <code>/dev/ttyACM0</code>.</p>
+<h3 id="install-the-razor-imu-ros-node">Install the Razor IMU ROS node</h3>
+<h4 id="flash-the-imu-firmware">Flash the IMU Firmware</h4>
+<p>Before installing ROS IMU node you need to follow the <a href="https://learn.sparkfun.com/tutorials/9dof-razor-imu-m0-hookup-guide">hookup guide</a> to properly<br>
+flash the firmware. It will also give you some more information about the sensor<br>
+itself that may come in handy.</p>
+<h4 id="installing-the-ros-node">Installing the ROS node</h4>
+<p>After following the hookup guide, you can follow the guide to install IMU ROS<br>
+node <a href="http://wiki.ros.org/razor_imu_9dof">here</a>. It includes 4 launch files to confirm that the IMU is working. One other<br>
+thing to note is that the default configuration searches for the IMU at<br>
+<code>/dev/ttyUSB0</code> so you may need to change that value to whatever the logical<br>
+filepath is for the IMU on the Jetson.</p>
+<h3 id="install-hector-slamcartographer">Install Hector SLAM/Cartographer</h3>
+<p>You can now install the SLAM node in order to do SLAM on the robot. Again<br>
+everything you’ll need to setup it up is in the official ROS wiki<br>
+documentation. If both your IMU and RPLIDAR are publishing to the proper<br>
+ROS topics <code>/imu</code> and <code>/LaserScan</code>, you will now be able to inspect a map of the<br>
+car using RVIZ.</p>
+<h4 id="the-.bag-format">The .bag Format</h4>
+<p>ROS uses a file called a .bag in order to bundle various records of data. An example<br>
+ROS bag might include images and point clouds from a self-driving car going down<br>
+a highway.</p>
+<h4 id="setting-up-cartographer">Setting up Cartographer</h4>
+<p>You can install Cartographer by following the steps in the <a href="https://google-cartographer-ros.readthedocs.io/en/latest/compilation.html">official documentation</a>.<br>
+Getting cartographer running can be slightly tricky. You will need to have a proper config and launch file for the cartographer node to run properly. Luckily, Google has provided <a href="https://google-cartographer-ros.readthedocs.io/en/latest/your_bag.html">excellent documentation</a> for this <a href="https://google-cartographer-ros.readthedocs.io/en/latest/going_further.html">issue</a>. I recommend<br>
+getting the demo running on a bag file.</p>
+<h4 id="setting-up-hector-slam">Setting up Hector SLAM</h4>
+<p>To setup Hector SLAM you can clone the Hector SLAM repo into the <code>src</code> folder<br>
+of your <code>catkin_ws</code> and then run <code>catkin_make</code> in <code>catkin_ws</code>.</p>
+<pre><code>cd ~/catkin_ws/src
+git clone https://github.com/tu-darmstadt-ros-pkg/hector_slam.git
+cd ..
+catkin_make
+</code></pre>
+<p>You will need to setup a proper launch file for Hector SLAM. I recommend looking<br>
+at the launch files used at this <a href="https://github.com/NickL77/RPLidar_Hector_SLAM">Github</a> if you are struggling with creating a good<br>
+launch file.</p>
+<h3 id="install-the-navigation-stack">Install the Navigation Stack</h3>
+<p>You will now need to install the ROS Navigation stack in order to provide the<br>
+robot with a path planning module. Unlike most of the algorithms we<br>
+discussed in class, the navigation stack generates trajectories for<br>
+the car to take based on the obstacles it sees. The trajectory will then<br>
+generate a list of velocities and steering angles we can input<br>
+into our control system to drive the car. Unfortunately, because we do<br>
+not have a control algorithm ready for the car we can not take<br>
+advantage of the Navigation stack. However, you will need to<br>
+understand how it functions in order to integrate autonomous<br>
+control of the vehicle. Refer to the official documentation for the<br>
+navigation stack to become familiar with how it works. There are<br>
+certain sections in particular you should look at.</p>
+<ul>
+<li><a href="http://wiki.ros.org/navigation/Tutorials/RobotSetup">Setting up the navigation stack</a></li>
+<li><a href="http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData">Building a map</a></li>
+<li><a href="http://wiki.ros.org/navigation/Tutorials/RobotSetup/TF">Set up robot transforms</a></li>
+<li><a href="http://wiki.ros.org/navigation/Tutorials/RobotSetup/Sensors">Publish Sensor Streams</a></li>
+<li><a href="http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom">Publish Odometry Information</a></li>
+</ul>
+<p>Note: In the map building section you can also generate these maps<br>
+using cartographer or hector SLAM. You may choose to do so as these<br>
+algorithms are more robust and may generate a higher fidelity map<br>
+of the arena.</p>
+<h2 id="submission-details">Submission Details</h2>
+<p>Your lab 5 submission will simply be a checkoff to<br>
+demonstrate that you were able to get the sensor<br>
+packages running and could generate a map. Your<br>
+car group will need to submit a Google Drive link<br>
+to a ROS bag of the arena map and all point<br>
+cloud and IMU data used to create that map.</p>
+
