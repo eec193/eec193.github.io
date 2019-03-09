@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>Markdown Edit Preview</title>
+	<title>Lab 6: PID Controller</title>
 	<!-- Must have base tag with id of "base-tag-id" -->
 	<base id="base-tag-id">
 	<!-- Don't delete this X-UA tag. The browser control behaves like IE8 otherwise -->
@@ -1164,13 +1164,20 @@
   </head>
 <body>
 <!-- Content goes here. The div must have an id of "content" -->
-<div id="content"><h1 id="lab-6:-pid-controller">Lab 6: PID-Controller</h1>
+<div id="content"><h1 id="lab-6:-pid-controller">Lab 6: PID Controller</h1>
 <p>Due: <strong>Saturday 3/16/19 11:59 pm</strong></p>
 <h2 id="description">Description</h2>
 <p>This is a PID controller lab for lateral control. You will work alone to code up a PID controller to perform lateral control of a simulated car moving at constant speed whose motion is governed by the bicycle kinematic model. You will also learn how to implement a PID auto-tuning algorithm called twiddle. The jupyter notebook is called <code>PID-Controller.ipynb</code>.</p>
-<p>Do all the TODO's in all of the code blocks.</p>
-<p>For implementing the auto-tuning algorithm in the final code block, you will all have your own assigned noise/drift parameters. Make sure to set the values <code>drift_angle</code>, <code>steering_noise</code>, and <code>distance_noise</code> to your assigned values in your final submission. Failure to do so, will result will result in a 10% deduction on your overall grade. This is to ensure you are all tuning a controller for your own &quot;car.&quot;</p>
-<p>You may find your assigned values <code>drift_angle</code>, <code>steering_noise</code>, and <code>distance_noise</code>, in that order, below:</p>
+<p>Make sure you understand the Car Class API, so you can do all the TODO's in all of the code blocks.</p>
+<p>For implementing the auto-tuning algorithm in the final code block, you all
+have your own assigned noise/drift parameters. Make sure to set the values
+<code>drift_angle</code>, <code>steering_noise</code>, and
+<code>distance_noise</code> to your assigned values in your final submission.
+Failure to do so will result in a 10% deduction on your overall grade. This is
+to ensure you are all tuning a controller for your own &quot;car.&quot;</p>
+<p>You may find your assigned values <code>drift_angle</code>,
+<code>steering_noise</code>, and <code>distance_noise</code>, in that order,
+below:</p>
 <pre>
 Calvin  :    10.0, 0.10, 0.10
 Daniel  :    25.0, 0.05, 0.10
@@ -1184,8 +1191,16 @@ Wenda   :   -10.0, 0.10, 0.10
 Toshi   :    25.0, 0.15, 0.05
 </pre>
 
-<p>Try your best to minimize overshoot, ringing, provide a reasonble setting time, etc. You will probably find that using the <code>run()</code> function with the twiddle algorithm does not result in a desirable car ride. This has much to do with the fact that the cost function defined in the <code>run()</code> function does not try to achieve any sort of desirable rise time, setting time, etc. It just tries to minimize the average cross-track error.</p>
-<p>While not required, extra credit will be given to anyone who defines their own unique cost function that is able to tune the controller in more useful ways...Feel free to modify the twiddle algorithm as needed as well.</p>
+<p>Try your best to minimize overshoot, ringing, provide a reasonable settling
+time, etc. You will probably find that using the <code>run()</code> function
+with the twiddle algorithm does not result in a desirable car ride. This has
+much to do with the fact that the cost function defined in the
+<code>run()</code> function does not try to achieve any sort of desirable rise
+time, setting time, etc. It just tries to minimize the average cross-track
+error.</p>
+<p>While not required, extra credit will be given to anyone who defines his/her
+own unique cost function that is able to tune the controller in more useful
+ways...Feel free to modify the twiddle algorithm as needed as well.</p>
 <h2 id="submission">Submission</h2>
 <p>You may submit the jupyter notebook as is or as a zip file on canvas.</p>
 </div>
